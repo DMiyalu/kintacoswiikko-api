@@ -2,15 +2,21 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 
+// Import des routes
+const ordersRouter = require('./routes/orders');
+
 const app = express();
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 
+// Routes
+app.use('/api/orders', ordersRouter);
+
 // Welcome route
 app.get('/', (req, res) => {
-    res.json({ message: 'Bienvenue sur KinTacosWiiko API' });
+    res.json({ message: 'Bienvenue sur KinTacosWiikko API' });
 });
 
 // Port configuration
