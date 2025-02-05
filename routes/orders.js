@@ -6,7 +6,37 @@ const FirebaseOrderProvider = require('../providers/FirebaseOrderProvider');
 // Initialisation du repository avec le provider Firebase
 const orderRepository = new OrderRepository(new FirebaseOrderProvider());
 
-// Route POST pour créer une nouvelle commande
+/**
+ * @swagger
+ * /api/orders:
+ *   post:
+ *     summary: Créer une nouvelle commande
+ *     tags: [Orders]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Order'
+ *     responses:
+ *       201:
+ *         description: Commande créée avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 order:
+ *                   $ref: '#/components/schemas/Order'
+ *       400:
+ *         description: Données invalides
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 router.post('/', async (req, res) => {
     try {
         const order = await orderRepository.create(req.body);
@@ -22,7 +52,45 @@ router.post('/', async (req, res) => {
     }
 });
 
-// Route GET pour récupérer toutes les commandes
+/**
+ * @swagger
+ * /api/orders:
+ *   get:
+ *     summary: Récupérer toutes les commandes
+ *     tags: [Orders]
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *         description: Filtrer par statut
+ *       - in: query
+ *         name: deliveryOption
+ *         schema:
+ *           type: string
+ *         description: Filtrer par option de livraison
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: Date de début
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: Date de fin
+ *     responses:
+ *       200:
+ *         description: Liste des commandes
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Order'
+ */
 router.get('/', async (req, res) => {
     try {
         const filters = {
@@ -42,7 +110,29 @@ router.get('/', async (req, res) => {
     }
 });
 
-// Route GET pour récupérer une commande par son ID
+/**
+ * @swagger
+ * /api/orders/{id}:
+ *   get:
+ *     summary: Récupérer une commande par son ID
+ *     tags: [Orders]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID de la commande
+ *     responses:
+ *       200:
+ *         description: Commande trouvée
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Order'
+ *       404:
+ *         description: Commande non trouvée
+ */
 router.get('/:id', async (req, res) => {
     try {
         const order = await orderRepository.findById(req.params.id);
@@ -58,7 +148,41 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-// Route PATCH pour mettre à jour le statut d'une commande
+/**
+ * @swagger
+ * /api/orders/{id}/status:
+ *   patch:
+ *     summary: Mettre à jour le statut d'une commande
+ *     tags: [Orders]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID de la commande
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - status
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 enum: [pending, confirmed, preparing, ready, delivered, cancelled]
+ *     responses:
+ *       200:
+ *         description: Statut mis à jour
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Order'
+ *       404:
+ *         description: Commande non trouvée
+ */
 router.patch('/:id/status', async (req, res) => {
     try {
         const { status } = req.body;
@@ -76,7 +200,35 @@ router.patch('/:id/status', async (req, res) => {
     }
 });
 
-// Route PUT pour mettre à jour une commande
+/**
+ * @swagger
+ * /api/orders/{id}:
+ *   put:
+ *     summary: Mettre à jour une commande
+ *     tags: [Orders]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID de la commande
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Order'
+ *     responses:
+ *       200:
+ *         description: Commande mise à jour
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Order'
+ *       404:
+ *         description: Commande non trouvée
+ */
 router.put('/:id', async (req, res) => {
     try {
         const order = await orderRepository.update(req.params.id, req.body);
@@ -89,7 +241,25 @@ router.put('/:id', async (req, res) => {
     }
 });
 
-// Route DELETE pour supprimer une commande
+/**
+ * @swagger
+ * /api/orders/{id}:
+ *   delete:
+ *     summary: Supprimer une commande
+ *     tags: [Orders]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID de la commande
+ *     responses:
+ *       204:
+ *         description: Commande supprimée
+ *       404:
+ *         description: Commande non trouvée
+ */
 router.delete('/:id', async (req, res) => {
     try {
         await orderRepository.delete(req.params.id);
