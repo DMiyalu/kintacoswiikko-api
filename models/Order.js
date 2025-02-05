@@ -54,18 +54,20 @@ class Order {
             }
         }
 
-        if (!this.validatePhoneNumber(this.phone)) {
-            throw new Error('Le numéro de téléphone est invalide');
-        }
+        // Validation des numéros désactivée temporairement
+        // if (!this.validatePhoneNumber(this.phone)) {
+        //     throw new Error('Le numéro de téléphone est invalide');
+        // }
 
-        if (!this.validatePhoneNumber(this.whatsapp)) {
-            throw new Error('Le numéro WhatsApp est invalide');
-        }
+        // if (!this.validatePhoneNumber(this.whatsapp)) {
+        //     throw new Error('Le numéro WhatsApp est invalide');
+        // }
     }
 
     validatePhoneNumber(number) {
         const phoneNumber = number.replace(/\D/g, '');
-        return phoneNumber.length === 9 && phoneNumber[0] !== '0';
+        return phoneNumber.length >= 10;
+        // return phoneNumber.length === 9 && phoneNumber[0] !== '0';
     }
 
     toJSON() {

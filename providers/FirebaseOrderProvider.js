@@ -1,4 +1,16 @@
 const { db } = require('../config/firebase-config');
+const { 
+    collection, 
+    addDoc, 
+    getDoc, 
+    getDocs, 
+    updateDoc, 
+    deleteDoc,
+    doc,
+    query,
+    where,
+    orderBy
+} = require('firebase/firestore');
 
 class FirebaseOrderProvider {
     constructor() {
@@ -6,59 +18,68 @@ class FirebaseOrderProvider {
     }
 
     async create(orderData) {
-        const docRef = await db.collection(this.collection).add(orderData);
-        const doc = await docRef.get();
+        const ordersRef = collection(db, this.collection);
+        const docRef = await addDoc(ordersRef, orderData);
+        const docSnap = await getDoc(docRef);
         return {
-            id: doc.id,
-            ...doc.data()
+            id: docRef.id,
+            ...docSnap.data()
         };
     }
 
     async findById(id) {
-        const doc = await db.collection(this.collection).doc(id).get();
-        if (!doc.exists) {
+        const docRef = doc(db, this.collection, id);
+        const docSnap = await getDoc(docRef);
+
+        if (!docSnap.exists()) {
             return null;
         }
+
         return {
-            id: doc.id,
-            ...doc.data()
+            id: docSnap.id,
+            ...docSnap.data()
         };
     }
 
     async findAll(filters = {}) {
-        let query = db.collection(this.collection);
+        const ordersRef = collection(db, this.collection);
+        let constraints = [];
 
         // Appliquer les filtres
         if (filters.status) {
-            query = query.where('status', '==', filters.status);
+            constraints.push(where('status', '==', filters.status));
         }
         if (filters.deliveryOption) {
-            query = query.where('deliveryOption', '==', filters.deliveryOption);
+            constraints.push(where('deliveryOption', '==', filters.deliveryOption));
         }
         if (filters.startDate) {
-            query = query.where('createdAt', '>=', filters.startDate);
+            constraints.push(where('createdAt', '>=', filters.startDate));
         }
         if (filters.endDate) {
-            query = query.where('createdAt', '<=', filters.endDate);
+            constraints.push(where('createdAt', '<=', filters.endDate));
         }
 
         // Trier par date de création (du plus récent au plus ancien)
-        query = query.orderBy('createdAt', 'desc');
+        constraints.push(orderBy('createdAt', 'desc'));
 
-        const snapshot = await query.get();
-        return snapshot.docs.map(doc => ({
+        const q = query(ordersRef, ...constraints);
+        const querySnapshot = await getDocs(q);
+
+        return querySnapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data()
         }));
     }
 
     async update(id, orderData) {
-        await db.collection(this.collection).doc(id).update(orderData);
+        const docRef = doc(db, this.collection, id);
+        await updateDoc(docRef, orderData);
         return this.findById(id);
     }
 
     async delete(id) {
-        await db.collection(this.collection).doc(id).delete();
+        const docRef = doc(db, this.collection, id);
+        await deleteDoc(docRef);
         return true;
     }
 }
