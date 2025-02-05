@@ -13,8 +13,8 @@ const options = {
         },
         servers: [
             {
-                url: 'http://localhost:3000',
-                description: 'Serveur de développement',
+                url: process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000',
+                description: process.env.VERCEL_URL ? 'Serveur de production' : 'Serveur de développement',
             },
         ],
         components: {
